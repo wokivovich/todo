@@ -26,9 +26,12 @@ public class Controller {
     }
 
     @PostMapping("/{author_id}/task/new")
-    public ResponseEntity<String> createTask(@PathVariable("author_id") Long authorId, @RequestBody String taskDescription) {
+    public ResponseEntity<String> createTask(
+            @PathVariable("author_id") Long authorId,
+            @RequestBody TaskRequest taskRequest
+    ) {
         Task task = Task.builder()
-                .description(taskDescription)
+                .description(taskRequest.description)
                 .isDone(false)
                 .build();
         taskService.createTask(task);
@@ -63,5 +66,7 @@ public class Controller {
     }
 
     record UserRequest(String name, String email, String password) {}
+
+    record TaskRequest(String description) {}
 
 }
