@@ -15,6 +15,7 @@ import java.util.Set;
         path = "/api",
         produces = "application/json"
 )
+@CrossOrigin(origins = {"http://localhost:3000", "http://client:3000"})
 public class Controller {
 
     private final TaskService taskService;
@@ -55,10 +56,10 @@ public class Controller {
     public ResponseEntity<Set<Task>> userActiveTasks(@PathVariable("user_id") Long userId) {
         Set<Task> userTasks = userService.getUncompletedTasks(userId);
 
-        return new ResponseEntity<>(userTasks, HttpStatus.FOUND);
+        return new ResponseEntity<>(userTasks, HttpStatus.OK);
     }
 
-    @PatchMapping("/task/complete/{task_id}")
+    @PostMapping("/task/complete/{task_id}")
     public ResponseEntity<String> completeTask(@PathVariable("task_id") Long taskId) {
         taskService.completeTask(taskId);
 

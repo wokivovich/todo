@@ -1,55 +1,60 @@
 package com.todo.client.view;
 
 import com.todo.client.Task;
+import com.todo.client.request.TaskRequest;
+import com.todo.client.service.RequestSender;
 import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Route("")
 public class MainView extends VerticalLayout {
 
-    List<Task> tasks = new ArrayList<>();
+    private final RequestSender requestSender;
 
-    public MainView() {
+    public MainView(RequestSender requestSender) {
+        this.requestSender = requestSender;
+
      VerticalLayout verticalLayout = new VerticalLayout();
      TextField taskField = new TextField();
-     Button createTask = new Button("Add task");
+     List<Task> tasks = requestSender.getUserActiveTasks(1L);
+     Button addTask = new Button("Add task");
 
-     createTask.addClickListener(click -> {
-         Task task = Task.builder()
-                 .task(taskField.getValue())
-                 .done(false)
-                 .build();
-         Checkbox checkbox = new Checkbox(task.getTask());
-         checkbox.addClickListener(checkboxClickEvent -> {
-             if (checkbox.getValue()) {
-                 task.setDone(true);
-                 checkbox.setVisible(false);
-                 System.out.println(task);
-             }
+     addTask.addClickListener(click -> {
+         if (!taskField.getValue().isEmpty()) {
+             requestSender.createTask(1L, new TaskRequest(taskField.getValue()));
 
+             UI.getCurrent().getPage().reload();
+         }
+     });
+     addTask.addClickShortcut(Key.ENTER);
+
+     tasks.forEach(task -> {
+         Checkbox checkbox = new Checkbox(task.getDescription());
+
+         checkbox.addClickListener(click -> {
+             requestSender.completeTask(task.getId());
+             checkbox.setVisible(false);
          });
-
-         System.out.println(task);
          verticalLayout.add(checkbox);
      });
-
-     createTask.addClickShortcut(Key.ENTER);
-
+        HorizontalLayout addTaskBlock = new HorizontalLayout();
+        addTaskBlock.add(taskField);
+        addTaskBlock.add(addTask);
 
      add(
              new H1("Tasks"),
 
              verticalLayout,
-             taskField,
-             createTask);
+             addTaskBlock
+     );
     }
 }
